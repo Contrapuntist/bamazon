@@ -4,7 +4,8 @@ var config = require('./config.js');
 var connection = config.connection; 
 var productList = []; 
 var isShopping = {
-    selectedProd: []
+    selectedProd: [],
+    customerTotal: 0.00
 }
 
 connection.connect(function(err){ 
@@ -13,6 +14,20 @@ connection.connect(function(err){
     // askReadyToShop();
 
 });  
+
+function getProductList() { 
+    console.log('Here is what\'s available');
+    let query = connection.query(
+        'select * from products',
+        function (err, res) {
+            for (var i = 0; i < res.length; i++ ) {
+                productList.push(res[i].item_id.toString());
+                console.log("Item ID: " + res[i].item_id + '  || Name: ' + res[i].product_name + '  || Price: ' + res[i].price); 
+            } 
+        askReadyToShop(); 
+        }
+    )
+} 
 
 // 1) show products
 // 2) show two messages, one to choose the id and second to ask number of units 
@@ -34,7 +49,7 @@ var askReadyToShop = function () {
         console.log(answers);
         if (answers.readytoshop === 'yes') { 
             console.log('is ready to shop'); 
-            showProductList();  
+            shopperChoice(productList)  
         } else { 
             console.log("Perhaps next time. Come back and see us soon!"); 
         }
@@ -43,13 +58,30 @@ var askReadyToShop = function () {
 
 // ['Item ID 1: Martin Acoustic Guitar', 'Item ID 4: Ernie Ball Strings', 'Item ID 6: Guitar Picks' ]
 
-function shopperChoice() {
+function showProductList(callback) { 
+    console.log('Here is what\'s available');
+    console.log(productList);
+    connection.query(
+        'select * from products',
+        function (err, res) {
+            if (err) throw err;
+            for (var i = 0; i < res.length; i++ ) {
+                console.log("Item ID: " + res[i].item_id + '  || Name: ' + res[i].product_name + '  || Price: ' + res[i].price); 
+            }
+        }
+    ) 
+    callback(productList);
+} 
+
+function shopperChoice (prodlist) {
+    console.log("reached shopper choice");
+    console.log(productList);  
     inquirer.prompt([
         {
             type: 'list',
             name: 'chooseProduct',
             message: "What would you like to buy?",
-            choices: productList
+            choices: prodlist
         },
         {
             type: 'input',
@@ -64,35 +96,9 @@ function shopperChoice() {
     }); 
 }
 
-function getProductList() { 
-    console.log('Here is what\'s available');
-    let query = connection.query(
-        'select * from products',
-        function (err, res) {
-            for (var i = 0; i < res.length; i++ ) {
-                productList.push(res[i]);
-                console.log("Item ID: " + res[i].item_id + '  || Name: ' + res[i].product_name + '  || Price: ' + res[i].price); 
-            } 
-        askReadyToShop(); 
-        }
-    )
-} 
-
-function showProductList() { 
-    console.log('Here is what\'s available');
-    let query = connection.query(
-        'select * from products',
-        function (err, res) {
-            for (var i = 0; i < res.length; i++ ) {
-                productList.push(res[i]);
-                console.log("Item ID: " + res[i].item_id + '  || Name: ' + res[i].product_name + '  || Price: ' + res[i].price); 
-            }
-        return shopperChoice();
-        }
-    )
-} 
 
 function shopMore(res) { 
+    console.log('reached shop more'); 
     if (res) { 
         inquirer.prompt([
             {
@@ -103,16 +109,16 @@ function shopMore(res) {
             }
         ]).then(function(answers) { 
             if (answers.shopmore === "No") {
-                shopperChoice();
+                shopperChoice(productList); 
             } else { 
                 for (var i = 0; i < isShopping.selectedProd.lenth; i++) { 
                     console.log ('Selected Item: ' + isShopping.selectedProd[i]);
                 } 
-                checkInStock(isShopping.selectedProd); 
+                checkInStock(isShopping.selectedProd, updateStock); 
             }
         }); 
     } else {
-        console.log(Error('Something went wrong')); 
+        console.log('Something went wrong'); 
     }
 }
 
@@ -123,22 +129,37 @@ function shopMore(res) {
 //     connection.end();
 //   });
 
-function checkInStock(prods) {
-    
-    console.log(prods.length);
-    var prodID = 1;
-    var prodqty = 1; 
-    let search = 'SELECT item_id, product_name, price, stock_qty FROM products WHERE item_id=' + prodID; 
-    connection.query(search, function(err, res) { 
-        // if (err) throw err;
-        console.log(res); 
-        console.log(res[0].stock_qty); 
-        var stockint = res[0].stock_qty;  
-        if (stockint - prodqty >= 0) { 
-            console.log(`You are in luck, we have that item in stock`); 
-            connection.end(); 
-        } else { 
-            console.log(`We don't have enough in stock`); 
-        }
-    })
+function checkInStock(prods, callback) {
+    for (var i = 0; i < prods.length; i++) { 
+
+        console.log('ID number: '+ prods[i].chooseProduct);
+        console.log('Quantity: ' + prods[i].productAmount);         
+        
+        let prodID = prods[i].chooseProduct;
+        let prodqty = prods[i].productAmount; 
+        let search = 'SELECT item_id, product_name, price, stock_qty FROM products WHERE item_id=' + prodID; 
+        
+        connection.query(search, function(err, res) { 
+            // if (err) throw err;
+            console.log(res); 
+            console.log(res[0].stock_qty); 
+            var stockint = res[0].stock_qty;  
+            if (stockint - prodqty >= 0) { 
+                console.log(`You are in luck, we have that item in stock`); 
+                // connection.end(); 
+                isShopping.customerTotal += (res[0].price * prodqty);
+                console.log(`Your total is: $ ${isShopping.customerTotal}`); 
+            } else { 
+                console.log(`We don't have enough of ${ res[0].product_name } in stock`); 
+                console.log(`Your total is: $ ${ isShopping.customerTotal }`);
+            }
+        })
+        
+        callback(); 
+    }
+}  
+
+var updateStock = function () { 
+    console.log('Time to update our stock after that purchase.');
+    connection.end();
 } 
