@@ -154,8 +154,8 @@ function checkInStock(prods, callback) {
                 console.log(`Your total is: $ ${ isShopping.customerTotal }`);
             }
         })
-        
-        callback(); 
+       
+    // callback(); 
     }
 }  
 
