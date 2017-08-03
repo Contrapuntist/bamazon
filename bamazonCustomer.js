@@ -2,14 +2,16 @@ var inquirer = require('inquirer');
 var mysql = require('mysql');
 var config = require('./config.js');
 var connection = config.connection; 
-
+var productList = []; 
 var isShopping = {
     selectedProd: []
 }
 
 connection.connect(function(err){ 
     if (err) throw err; 
-    askReadyToShop(); 
+    getProductList();
+    // askReadyToShop();
+
 });  
 
 // 1) show products
@@ -18,11 +20,7 @@ connection.connect(function(err){
 //  then print 'insufficient quanity' and prevent order from completing
 // 4) if store does have proper quanity, then fulfill order, which then requires updating 
 //  database with new quanity amount and then show customer total cost of purchase. 
-var productList = [];  
-
-
-
-
+ 
 
 var askReadyToShop = function () { 
     inquirer.prompt([ 
@@ -34,7 +32,6 @@ var askReadyToShop = function () {
         }
     ]).then(function(answers) {
         console.log(answers);
-
         if (answers.readytoshop === 'yes') { 
             console.log('is ready to shop'); 
             showProductList();  
@@ -44,13 +41,15 @@ var askReadyToShop = function () {
     });
 } 
 
-function shopperChoice() { 
+// ['Item ID 1: Martin Acoustic Guitar', 'Item ID 4: Ernie Ball Strings', 'Item ID 6: Guitar Picks' ]
+
+function shopperChoice() {
     inquirer.prompt([
         {
             type: 'list',
             name: 'chooseProduct',
             message: "What would you like to buy?",
-            choices: ['Item ID 1: Martin Acoustic Guitar', 'Item ID 4: Ernie Ball Strings', 'Item ID 6: Guitar Picks' ]
+            choices: productList
         },
         {
             type: 'input',
@@ -65,6 +64,20 @@ function shopperChoice() {
     }); 
 }
 
+function getProductList() { 
+    console.log('Here is what\'s available');
+    let query = connection.query(
+        'select * from products',
+        function (err, res) {
+            for (var i = 0; i < res.length; i++ ) {
+                productList.push(res[i]);
+                console.log("Item ID: " + res[i].item_id + '  || Name: ' + res[i].product_name + '  || Price: ' + res[i].price); 
+            } 
+        askReadyToShop(); 
+        }
+    )
+} 
+
 function showProductList() { 
     console.log('Here is what\'s available');
     let query = connection.query(
@@ -77,7 +90,6 @@ function showProductList() {
         return shopperChoice();
         }
     )
-    return connection.end();
 } 
 
 function shopMore(res) { 
@@ -93,7 +105,10 @@ function shopMore(res) {
             if (answers.shopmore === "No") {
                 shopperChoice();
             } else { 
-                console.log ('What you selected' + isShopping.selectedProd); 
+                for (var i = 0; i < isShopping.selectedProd.lenth; i++) { 
+                    console.log ('Selected Item: ' + isShopping.selectedProd[i]);
+                } 
+                checkInStock(isShopping.selectedProd); 
             }
         }); 
     } else {
@@ -101,12 +116,29 @@ function shopMore(res) {
     }
 }
 
+//   connection.query("SELECT * FROM products", function(err, res) {
+//     if (err) throw err;
+//     // Log all results of the SELECT statement
+//     console.log(res);
+//     connection.end();
+//   });
 
-function shopForWhat (list) { 
-    console.log('shop for what?');
-    connection.end(); 
-    return new Promise(function (resolve, reject) {
-
-    })
+function checkInStock(prods) {
     
+    console.log(prods.length);
+    var prodID = 1;
+    var prodqty = 1; 
+    let search = 'SELECT item_id, product_name, price, stock_qty FROM products WHERE item_id=' + prodID; 
+    connection.query(search, function(err, res) { 
+        // if (err) throw err;
+        console.log(res); 
+        console.log(res[0].stock_qty); 
+        var stockint = res[0].stock_qty;  
+        if (stockint - prodqty >= 0) { 
+            console.log(`You are in luck, we have that item in stock`); 
+            connection.end(); 
+        } else { 
+            console.log(`We don't have enough in stock`); 
+        }
+    })
 } 
