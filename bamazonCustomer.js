@@ -7,12 +7,14 @@ var isShopping = {
     selectedProd: [],
     customerTotal: 0.00
 }
+var prodID = null; 
+var prodqty = null;
+var stockint = null; 
+
 
 connection.connect(function(err){ 
     if (err) throw err; 
     getProductList();
-    // askReadyToShop();
-
 });  
 
 function getProductList() { 
@@ -28,14 +30,6 @@ function getProductList() {
         }
     )
 } 
-
-// 1) show products
-// 2) show two messages, one to choose the id and second to ask number of units 
-// 3) check quantity to make sure product(s) selected are available.  if not enough available
-//  then print 'insufficient quanity' and prevent order from completing
-// 4) if store does have proper quanity, then fulfill order, which then requires updating 
-//  database with new quanity amount and then show customer total cost of purchase. 
- 
 
 var askReadyToShop = function () { 
     inquirer.prompt([ 
@@ -55,8 +49,6 @@ var askReadyToShop = function () {
         }
     });
 } 
-
-// ['Item ID 1: Martin Acoustic Guitar', 'Item ID 4: Ernie Ball Strings', 'Item ID 6: Guitar Picks' ]
 
 function showProductList(callback) { 
     console.log('Here is what\'s available');
@@ -114,52 +106,89 @@ function shopMore(res) {
                 for (var i = 0; i < isShopping.selectedProd.lenth; i++) { 
                     console.log ('Selected Item: ' + isShopping.selectedProd[i]);
                 } 
-                checkInStock(isShopping.selectedProd, updateStock); 
+                return checkInStock(isShopping.selectedProd, updateStock).then(function(){
+                    // console.log(response); 
+                    completeOrder(isShopping.customerTotal); 
+                    })   
             }
         }); 
     } else {
-        console.log('Something went wrong'); 
+        console.log(Error('Something went wrong')); 
     }
 }
 
-//   connection.query("SELECT * FROM products", function(err, res) {
-//     if (err) throw err;
-//     // Log all results of the SELECT statement
-//     console.log(res);
-//     connection.end();
-//   });
-
-function checkInStock(prods, callback) {
-    for (var i = 0; i < prods.length; i++) { 
-
-        console.log('ID number: '+ prods[i].chooseProduct);
-        console.log('Quantity: ' + prods[i].productAmount);         
-        
-        let prodID = prods[i].chooseProduct;
-        let prodqty = prods[i].productAmount; 
-        let search = 'SELECT item_id, product_name, price, stock_qty FROM products WHERE item_id=' + prodID; 
-        
-        connection.query(search, function(err, res) { 
-            // if (err) throw err;
-            console.log(res); 
-            console.log(res[0].stock_qty); 
-            var stockint = res[0].stock_qty;  
-            if (stockint - prodqty >= 0) { 
-                console.log(`You are in luck, we have that item in stock`); 
-                // connection.end(); 
-                isShopping.customerTotal += (res[0].price * prodqty);
-                console.log(`Your total is: $ ${isShopping.customerTotal}`); 
-            } else { 
-                console.log(`We don't have enough of ${ res[0].product_name } in stock`); 
-                console.log(`Your total is: $ ${ isShopping.customerTotal }`);
-            }
-        })
-       
-    // callback(); 
+function checkInStock(prods, callback) { 
+    return new Promise (function (resolve, reject) { 
+        for (var i = 0; i < prods.length; i++) { 
+            console.log('ID number: '+ prods[i].chooseProduct);
+            console.log('Quantity: ' + prods[i].productAmount);         
+            
+            prodID = prods[i].chooseProduct;
+            prodqty = prods[i].productAmount; 
+            let search = 'SELECT item_id, product_name, price, stock_qty FROM products WHERE item_id=' + prodID; 
+            
+            connection.query(search, function(err, res) { 
+                if (err) {
+                    reject(err) 
+                } else { 
+                    resolve(sqlCheck(res, updateStock))
+                }
+            })
+        }  
+    })
+}
+ 
+function sqlCheck (res, callback) { 
+    console.log(res[0].stock_qty); 
+    stockint = res[0].stock_qty;  
+    if (stockint - prodqty >= 0) { 
+        console.log(`You are in luck, we have that item in stock`); 
+        // connection.end(); 
+        isShopping.customerTotal += (res[0].price * prodqty);
+        console.log(`Your total is: $ ${isShopping.customerTotal}`); 
+        callback( prodID, stockint, prodqty); 
+    } else { 
+        console.log(`We don't have enough of ${ res[0].product_name } in stock`); 
+        console.log(`Your total is: $ ${ isShopping.customerTotal }`);
     }
-}  
+}
 
-var updateStock = function () { 
+
+function updateStock (id, stock, prodqty) { 
     console.log('Time to update our stock after that purchase.');
-    connection.end();
+    let newqty = stock - prodqty;
+    connection.query(
+    "UPDATE products SET ? WHERE ?",
+    [
+      {
+        stock_qty: newqty
+      },
+      {
+        item_id: id
+      }
+    ],
+    function(err, res) {
+        console.log(res);
+        // console.log(res.affectedRows + " products updated!\n");
+        // connection.end();
+    }
+  );
 } 
+
+// var completeOrder = Promise.resolve(`Thank you for shopping. Your total is $${ isShopping.customerTotal }`);
+
+var completeOrder = function (total) { 
+    return new Promise (function (resolve, reject) { 
+        if (total) { 
+            console.log (`Thank you for shopping. Your total is $${ total }`); 
+            endConnect(); 
+        } else {
+            reject('Error occurred'); 
+        }
+    });  
+};
+
+function endConnect () {  
+    connection.end(); 
+    console.log('do we have an async issue?')
+}
