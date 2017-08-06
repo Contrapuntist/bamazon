@@ -7,7 +7,7 @@ var shoppingObj = {
     cart: [],
     prodData: [],
     customerTotal: 0.00,
-    counter: 0;
+    counter: 0,
     shopDone: false
 }
 var prodID = null; 
@@ -91,7 +91,6 @@ function shopperChoice (prodlist) {
     }); 
 }
 
-
 function shopMore() { 
     console.log('reached shop more'); 
     
@@ -116,7 +115,7 @@ function shopMore() {
 }
 
 function getStockData (prods) {
-    console.log(prods);
+    console.log("In get stock ... Product length is " + shoppingObj.cart.length);
     for (var i = 0; i < prods.length; i++) {
         prodID = prods[i].chooseProduct;
         prodqty = prods[i].productAmount;
@@ -139,22 +138,21 @@ function getStockData (prods) {
     }
 }
 
-// id, userqty, stockqty, price
-
 function addToTotal (data, userqty) {    
 
         var tally = data[0].price * userqty;
         shoppingObj.customerTotal += tally;
         console.log("Your total is: $" + shoppingObj.customerTotal); 
         updateStock(data, userqty).then(function(res, err) {
-            console.log('reached what comes after update stock'); 
+            // console.log('reached what comes after update stock');
+            orderCompleteCheck() 
         }); 
 }
 
-function notInStock (res) {
+function notInStock (data) {
         
-        console.log(`We don't have enough of ${ res[0].product_name } in stock`); 
-        console.log(`Your total is: $ ${ shoppingObj.customerTotal }`); 
+        console.log(`We don't have enough of ${ data[0].product_name } in stock`); 
+        console.log(`Your total is: $ ${ shoppingObj.customerTotal }`);  
 }
 
 function updateStock (data, userqty) { 
@@ -173,42 +171,31 @@ function updateStock (data, userqty) {
             }
             ],
             function(err, res) {
-                console.log(res);
+                // console.log(res);
                 resolve();
-                // console.log(res.affectedRows + " products updated!\n");
-                // connection.end();
             }
         );
     
     })
 } 
 
-// var completeOrder = Promise.resolve(`Thank you for shopping. Your total is $${ shoppingObj.customerTotal }`);
-function orderCompleteCheck(val) {
+function orderCompleteCheck() {
     shoppingObj.counter++; 
-    console.log('shopping counter: ' + shoppingObj.counter); 
-    if (shoppingObj.counter === productList.length) {
+    console.log('shopping counter: ' + shoppingObj.counter + "||  Item IDs in cart: " + shoppingObj.cart.length); 
+    if (shoppingObj.counter === shoppingObj.cart.length) {
         shoppingObj.shopDone = true;
-        completeOrder();  
+        completeOrder(shoppingObj.shopDone);  
     }
 }   
 
-
-
-function completeOrder () {  
-    return new Promise (function (resolve, reject) { 
-        if (shoppingObj.shopDone) { 
-            console.log (`Thank you for shopping. Your total is $${ shoppingObj.customerTotal }`); 
-            endConnect(); 
-        } else {
-            reject('completeOrder error occurred'); 
-        }
-        resolve();
-    });  
-
-};
+function completeOrder (done) {
+    console.log('Is order processing complete: ' + done);   
+    if (done) { 
+        console.log (`Thank you for shopping. Your total is $${ shoppingObj.customerTotal }`); 
+        endConnect();   
+    }
+}
 
 function endConnect () {  
     connection.end(); 
-    console.log('do we have an async issue?')
 }
