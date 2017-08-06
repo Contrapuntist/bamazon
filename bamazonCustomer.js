@@ -21,8 +21,11 @@ connection.connect(function(err){
 });  
 
 function getProductList() { 
+    console.log('*****************************************************************');
     console.log('Here is what\'s available');
-    let query = connection.query(
+    console.log('*****************************************************************');
+
+    connection.query(
         'select * from products',
         function (err, res) {
             for (var i = 0; i < res.length; i++ ) {
@@ -48,13 +51,18 @@ var askReadyToShop = function () {
             console.log('is ready to shop'); 
             shopperChoice(productList)  
         } else { 
+            console.log('*****************************************************************');
             console.log("Perhaps next time. Come back and see us soon!"); 
+            console.log('*****************************************************************');
         }
     });
 } 
 
 function showProductList(callback) { 
+    console.log('*****************************************************************');    
     console.log('Here is what\'s available');
+    console.log('*****************************************************************');
+    
     console.log(productList);
     connection.query(
         'select * from products',
@@ -69,8 +77,8 @@ function showProductList(callback) {
 } 
 
 function shopperChoice (prodlist) {
-    console.log("reached shopper choice");
-    console.log(productList);  
+    // console.log("reached shopper choice");
+    // console.log(productList);  
     inquirer.prompt([
         {
             type: 'list',
@@ -84,7 +92,7 @@ function shopperChoice (prodlist) {
             message: 'How many would you like to buy?' 
         }
     ]).then(function(response) {
-        console.log(response);
+        // console.log(response);
         shoppingObj.cart.push(response); 
         shopMore(); 
 
@@ -92,30 +100,26 @@ function shopperChoice (prodlist) {
 }
 
 function shopMore() { 
-    console.log('reached shop more'); 
-    
-        inquirer.prompt([
-            {
-                type: 'list',
-                name: 'shopmore',
-                message: 'Done shopping?',
-                choices: ['Yes', 'No'] 
-            }
-        ]).then(function(answers) { 
-            if (answers.shopmore === "No") {
-                shopperChoice(productList); 
-            } else { 
-                // for (var i = 0; i < shoppingObj.cart.length; i++) { 
-                //     console.log ('Selected Item: ' + shoppingObj.cart[i].product_name);
-                // } 
-                getStockData(shoppingObj.cart);
-            }
-        }); 
-    
+    // console.log('reached shop more');     
+    inquirer.prompt([
+        {
+            type: 'list',
+            name: 'shopmore',
+            message: 'Done shopping?',
+            choices: ['Yes', 'No'] 
+        }
+    ]).then(function(answers) { 
+        if (answers.shopmore === "No") {
+            
+            shopperChoice(productList); 
+        } else { 
+            getStockData(shoppingObj.cart);
+        }
+    });     
 }
 
 function getStockData (prods) {
-    console.log("In get stock ... Product length is " + shoppingObj.cart.length);
+    // console.log("In get stock ... Product length is " + shoppingObj.cart.length);
     for (var i = 0; i < prods.length; i++) {
         prodID = prods[i].chooseProduct;
         prodqty = prods[i].productAmount;
@@ -128,7 +132,10 @@ function getStockData (prods) {
             stockint = res[0].stock_qty;
             console.log('Stock Quantity: ' + stockint);  
             if ( stockint > 0 ) { 
-                console.log(`You are in luck, we have that item in stock`); 
+                console.log('*****************************************************************');
+                console.log(`You are in luck, we have ${res[0].product_name} item in stock`); 
+                console.log('*****************************************************************');
+            
                 addToTotal(res, prodqty);
                 orderCompleteCheck(prods.length);   
             } else { 
@@ -152,7 +159,7 @@ function addToTotal (data, userqty) {
 function notInStock (data) {
         
         console.log(`We don't have enough of ${ data[0].product_name } in stock`); 
-        console.log(`Your total is: $ ${ shoppingObj.customerTotal }`);  
+        console.log(`Your total is: $${ shoppingObj.customerTotal }`);  
 }
 
 function updateStock (data, userqty) { 
@@ -171,7 +178,7 @@ function updateStock (data, userqty) {
             }
             ],
             function(err, res) {
-                // console.log(res);
+                console.log(res);
                 resolve();
             }
         );
@@ -181,7 +188,7 @@ function updateStock (data, userqty) {
 
 function orderCompleteCheck() {
     shoppingObj.counter++; 
-    console.log('shopping counter: ' + shoppingObj.counter + "||  Item IDs in cart: " + shoppingObj.cart.length); 
+    // console.log('shopping counter: ' + shoppingObj.counter + "||  Item IDs in cart: " + shoppingObj.cart.length); 
     if (shoppingObj.counter === shoppingObj.cart.length) {
         shoppingObj.shopDone = true;
         completeOrder(shoppingObj.shopDone);  
