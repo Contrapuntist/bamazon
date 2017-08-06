@@ -1,6 +1,6 @@
 #config 
 config.js
-
+.vscode
 # Logs
 logs
 *.log
