@@ -18,7 +18,7 @@ Once the user completes shopping, the then does a series of actions.
 
 Step 1 
 
-![Step 1](/images/Bamazon-Step1.png)
+![Step 1](/bamazon/master/images/Bamazon-Step1.PNG)
 
 Step 2 - After yes, Select Item
 
