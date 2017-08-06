@@ -1,3 +1,7 @@
+// Mid program, had to rethink logic and program to resolve connection ending issue. 
+// created this backup file and code in case I needed to bring something I had previously created back into working file.
+
+
 var inquirer = require('inquirer');
 var mysql = require('mysql');
 var config = require('./config.js');
