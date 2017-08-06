@@ -32,6 +32,11 @@ Step 4 - Done shopping? prompt
 
 ![Step 4 - Done shopping prompt](https://github.com/Contrapuntist/bamazon/blob/master/images/Bamazon-Step4-doneshoppingprompt.PNG)
 
-Step 5 
+Step 5 - Continue shopping (optional)
+![Step 5 - More Shopping Prompt](https://github.com/Contrapuntist/bamazon/blob/master/images/Bamazon-Step5-moreshoppingprompt.PNG)  
 
-Step 6 
+Step 6 - Order processed: check stock and tally total
+![Step 6 - Order processed: check stock and tally total](https://github.com/Contrapuntist/bamazon/blob/master/images/Bamazon-Step6-ProcessOrderandUpdateStockAutomated.PNG)
+
+Step 7 - Datbase updates and database connection ends
+![Step 7 - Logs product items updates in database] (https://github.com/Contrapuntist/bamazon/blob/master/images/Bamazon-Step7-DatabaseUpdateconfirm.PNG)
