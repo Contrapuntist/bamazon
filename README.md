@@ -22,7 +22,7 @@ Step 1
 
 Step 2 - After yes, Select Item
 
-![Step 2 - select item](https://github.com/Contrapuntist/bamazon/blob/master/images/Bamazon-Step2-yes.png)
+![Step 2 - select item](bamazon/images/Bamazon-Step2-yes.PNG)
 
 Step 3 - Enter quantity 
 
