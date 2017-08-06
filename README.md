@@ -18,19 +18,19 @@ Once the user completes shopping, the then does a series of actions.
 
 Step 1 
 
-![Step 1](images/Bamazon-Step1.png)
+![Step 1](https://github.com/Contrapuntist/bamazon/blob/master/images/Bamazon-Step1.PNG)
 
 Step 2 - After yes, Select Item
 
-![Step 2 - select item](images/Bamazon-Step2-yes.png)
+![Step 2 - select item](https://github.com/Contrapuntist/bamazon/blob/master/images/Bamazon-Step2-yes.png)
 
 Step 3 - Enter quantity 
 
-![Step 3 - select quanity](images/Bamazon-Step3-qty.png)
+![Step 3 - select quanity](https://github.com/Contrapuntist/bamazon/blob/master/images/Bamazon-Step3-qty.png)
 
 Step 4 - Done shopping? prompt
 
-![Step 4 - Done shopping prompt](images/Bamazon-Step4-doneshoppingprompt.png)
+![Step 4 - Done shopping prompt](https://github.com/Contrapuntist/bamazon/blob/master/images/Bamazon-Step4-doneshoppingprompt.png)
 
 Step 5 
 
