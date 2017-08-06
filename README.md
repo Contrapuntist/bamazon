@@ -18,15 +18,19 @@ Once the user completes shopping, the then does a series of actions.
 
 Step 1 
 
-(/images/Bamazon-Step1.png)
+![Step 1](/images/Bamazon-Step1.png)
 
-Step 2 
+Step 2 - After yes, Select Item
 
-(/images/Bamazon-Step1.png)
+![Step 2 - select item](/images/Bamazon-Step2-yes.png)
 
-Step 3 
+Step 3 - Enter quantity 
 
-Step 4 
+![Step 3 - select quanity](/images/Bamazon-Step3-qty.png)
+
+Step 4 - Done shopping? prompt
+
+![Step 4 - Done shopping prompt](/images/Bamazon-Step4-doneshoppingprompt.png)
 
 Step 5 
 
