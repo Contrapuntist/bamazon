@@ -30,7 +30,7 @@ Step 3 - Enter quantity
 
 Step 4 - Done shopping? prompt
 
-![Step 4 - Done shopping prompt](/images/Bamazon-Step4-doneshoppingprompt.png)
+![Step 4 - Done shopping prompt](images/Bamazon-Step4-doneshoppingprompt.png)
 
 Step 5 
 
